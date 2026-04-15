@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SolvyrStudio | Gerador de QR Code</title>
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --primary: #22c55e;
+      --secondary: #38bdf8;
+      --accent: #f59e0b;
+      --danger: #ef4444;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --input: #1f2937;
+      --white: #ffffff;
+      --border: rgba(255,255,255,0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    .field {
+      text-align: left;
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      outline: none;
+      background: var(--input);
+      color: var(--white);
+      font-size: 14px;
+    }
+
+    input::placeholder {
+      color: #6b7280;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .btn-generate {
+      background: var(--primary);
+      color: #06240f;
+    }
+
+    .btn-save {
+      background: var(--secondary);
+      color: #031a24;
+    }
+
+    .btn-download {
+      background: var(--accent);
+      color: #2a1a02;
+      display: none;
+    }
+
+    .btn-clear {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .preview-wrap {
+      margin-top: 22px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .qr-card {
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 320px;
+      min-height: 320px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    #qrImage {
+      display: none;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .status {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+
+    .tips {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    footer {
+      margin-top: 18px;
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        padding: 20px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .qr-card {
+        min-width: 100%;
+        min-height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="logo">SolvyrStudio</div>
+    <div class="subtitle">Gerador de QR Code otimizado para celular</div>
+
+    <div class="field">
+      <label for="text">Link ou texto</label>
+      <input
+        type="text"
+        id="text"
+        placeholder="Cole um link ou digite um texto..."
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label for="size">Tamanho</label>
+        <select id="size">
+          <option value="300x300">300 x 300</option>
+          <option value="400x400" selected>400 x 400</option>
+          <option value="500x500">500 x 500</option>
+          <option value="800x800">800 x 800</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="margin">Margem branca</label>
+        <select id="margin">
+          <option value="1">Pequena</option>
+          <option value="2" selected>Média</option>
+          <option value="4">Grande</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-generate" onclick="gerarQR()">Gerar QR Code</button>
+    <button class="btn btn-save" onclick="salvarQR()">Salvar Permanente</button>
+    <button class="btn btn-download" id="downloadBtn" onclick="baixarQR()">Baixar PNG</button>
+    <button class="btn btn-clear" onclick="limparQR()">Limpar salvo</button>
+
+    <div class="preview-wrap">
+      <div class="qr-card">
+        <img id="qrImage" alt="QR Code gerado">
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="tips">
+      Esta versão não usa biblioteca QR local. Ela evita o erro de JavaScript e melhora a leitura pela câmera do celular.
+    </div>
+
+    <footer>© 2026 SolvyrStudio</footer>
+  </div>
+
+  <script>
+    let currentValue = "";
+    let currentQrUrl = "";
+
+    const textEl = document.getElementById("text");
+    const sizeEl = document.getElementById("size");
+    const marginEl = document.getElementById("margin");
+    const qrImageEl = document.getElementById("qrImage");
+    const statusEl = document.getElementById("status");
+    const downloadBtnEl = document.getElementById("downloadBtn");
+
+    function mostrarStatus(msg, erro = false) {
+      statusEl.textContent = msg;
+      statusEl.style.color = erro ? "#fca5a5" : "var(--muted)";
+    }
+
+    function montarQrUrl(texto, size, margin) {
+      const encoded = encodeURIComponent(texto);
+      return `https://api.qrserver.com/v1/create-qr-code/?data=${encoded}&size=${size}&qzone=${margin}&format=png`;
+    }
+
+    function gerarQR() {
+      const text = textEl.value.trim();
+      const size = sizeEl.value;
+      const margin = marginEl.value;
+
+      if (!text) {
+        mostrarStatus("Digite um valor válido para gerar o QR.", true);
+        return;
+      }
+
+      currentValue = text;
+      currentQrUrl = montarQrUrl(text, size, margin);
+
+      qrImageEl.onload = function () {
+        qrImageEl.style.display = "block";
+        downloadBtnEl.style.display = "block";
+        mostrarStatus("QR gerado com sucesso e otimizado para leitura em celular.");
+      };
+
+      qrImageEl.onerror = function () {
+        mostrarStatus("Falha ao carregar a imagem do QR Code. Verifique sua internet.", true);
+      };
+
+      qrImageEl.src = currentQrUrl;
+    }
+
+    function salvarQR() {
+      if (!currentValue) {
+        mostrarStatus("Gere um QR antes de salvar.", true);
+        return;
+      }
+
+      const data = {
+        text: currentValue,
+        size: sizeEl.value,
+        margin: marginEl.value
+      };
+
+      localStorage.setItem("solvyr_qr_data", JSON.stringify(data));
+      mostrarStatus("QR salvo permanentemente neste navegador.");
+    }
+
+    function carregarQR() {
+      const saved = localStorage.getItem("solvyr_qr_data");
+      if (!saved) return;
+
+      try {
+        const data = JSON.parse(saved);
+
+        if (data.text) textEl.value = data.text;
+        if (data.size) sizeEl.value = data.size;
+        if (data.margin) marginEl.value = data.margin;
+
+        gerarQR();
+        mostrarStatus("QR carregado automaticamente do navegador.");
+      } catch (e) {
+        mostrarStatus("Não foi possível ler o QR salvo.", true);
+      }
+    }
+
+    function baixarQR() {
+      if (!currentQrUrl) {
+        mostrarStatus("Gere um QR antes de baixar.", true);
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = currentQrUrl;
+      link.download = "solvyr-qrcode.png";
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      mostrarStatus("Download do PNG iniciado.");
+    }
+
+    function limparQR() {
+      localStorage.removeItem("solvyr_qr_data");
+      currentValue = "";
+      currentQrUrl = "";
+      textEl.value = "";
+      qrImageEl.src = "";
+      qrImageEl.style.display = "none";
+      downloadBtnEl.style.display = "none";
+      mostrarStatus("QR salvo removido.");
+    }
+
+    textEl.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        gerarQR();
+      }
+    });
+
+    carregarQR();
+  </script>
+</body>
+</html>
